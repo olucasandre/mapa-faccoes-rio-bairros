@@ -38,6 +38,14 @@ python gerar_dados.py
 python -m unittest discover -s testes -v
 ```
 
+O mesmo procedimento pode ser executado pelo atalho:
+
+```bash
+make verificar
+```
+
+Essa verificação também roda automaticamente no GitHub a cada envio ou pull request. O ambiente virtual, o perfil do navegador e os caches do Python não são versionados; eles são recriados quando necessário.
+
 Para renovar os mapas a partir das páginas do Fogo Cruzado:
 
 ```bash

@@ -1,0 +1,33 @@
+name: Testes
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  reproducao:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Regenerar dados
+        run: python gerar_dados.py
+
+      - name: Rodar testes
+        run: python -m unittest discover -s testes -v
+
+      - name: Conferir arquivos gerados
+        run: git diff --exit-code -- dados/manifesto.csv dados/processados
