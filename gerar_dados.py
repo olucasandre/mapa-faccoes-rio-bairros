@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from pyproj import Transformer
-from shapely import make_valid
+from shapely import make_valid, set_precision
 from shapely.geometry import mapping, shape
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform, unary_union
@@ -224,21 +224,14 @@ def gravar_csv(caminho: Path, linhas: Iterable[dict[str, Any]], campos: list[str
 
 
 def gravar_malha(caminho: Path, bairros: list[dict[str, Any]]) -> None:
-    def coordenadas_estaveis(valor: Any) -> Any:
-        if isinstance(valor, float):
-            return round(valor, 8)
-        if isinstance(valor, (list, tuple)):
-            return [coordenadas_estaveis(item) for item in valor]
-        return valor
-
     features = []
     for bairro in bairros:
         # A normalização fixa a ordem de anéis e polígonos. O arredondamento
         # evita diferenças residuais entre as bibliotecas de projeção de macOS
         # e Linux, sem perda relevante para a escala da malha censitária.
-        geometria_wgs84 = transform(PARA_WGS84.transform, bairro["geometry"]).normalize()
+        geometria_wgs84 = transform(PARA_WGS84.transform, bairro["geometry"])
+        geometria_wgs84 = set_precision(geometria_wgs84, grid_size=0.00000001).normalize()
         geometria_geojson = mapping(geometria_wgs84)
-        geometria_geojson["coordinates"] = coordenadas_estaveis(geometria_geojson["coordinates"])
         features.append(
             {
                 "type": "Feature",

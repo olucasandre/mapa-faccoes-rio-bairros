@@ -9,6 +9,10 @@ import unittest
 from collections import defaultdict
 from pathlib import Path
 
+from pyproj import Transformer
+from shapely.geometry import shape
+from shapely.ops import transform
+
 
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ))
@@ -60,6 +64,15 @@ class DadosGeradosTest(unittest.TestCase):
         }
         codigos_csv = {linha["codigo_bairro_2010"] for linha in self.linhas}
         self.assertEqual(codigos_malha, codigos_csv)
+
+        para_area = Transformer.from_crs("EPSG:4326", "EPSG:31983", always_xy=True)
+        for feature in malha["features"]:
+            geometria = shape(feature["geometry"])
+            self.assertFalse(geometria.is_empty)
+            self.assertTrue(geometria.is_valid)
+            area_calculada = transform(para_area.transform, geometria).area
+            area_registrada = float(feature["properties"]["area_m2"])
+            self.assertAlmostEqual(area_calculada, area_registrada, delta=area_registrada * 0.000001)
 
     def test_manifesto_confere_com_os_arquivos(self) -> None:
         with (RAIZ / "dados/manifesto.csv").open(encoding="utf-8", newline="") as arquivo:

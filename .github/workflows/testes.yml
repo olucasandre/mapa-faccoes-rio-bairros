@@ -30,4 +30,4 @@ jobs:
         run: python -m unittest discover -s testes -v
 
       - name: Conferir arquivos gerados
-        run: git diff --exit-code -- dados/manifesto.csv dados/processados
+        run: git diff --exit-code -- dados/manifesto.csv dados/processados/auditoria.json dados/processados/faccoes_bairro_2010_2022.csv
